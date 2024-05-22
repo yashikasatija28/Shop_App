@@ -1,21 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shop_app/providers/products.dart';
+import 'package:shop_app/widgets/app_drawer.dart';
 
 class UserProductScreen extends StatelessWidget {
   const UserProductScreen({super.key});
+  static const routename = './user-product';
 
   @override
   Widget build(BuildContext context) {
+    final Productdata = Provider.of<Products>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(''),
-        actions: [IconButton(onPressed: () {}, icon: Icon(Icons.add))],
+        title: Text(' Your Products'),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.add),
+          ),
+        ],
       ),
+      drawer: AppDrawer(),
       body: Padding(
-        padding: EdgeInsets.all(8),
-        child: ListView.builder(
-        itemcount :   ,
-        itemBuilder: itemBuilder),
-      ),
+          padding: EdgeInsets.all(8),
+          child: ListView.builder(
+              itemCount: Productdata.items.length,
+              itemBuilder: (_, i) => Column(
+                    children: [],
+                  ))),
     );
   }
 }
