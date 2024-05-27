@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:shop_app/providers/products.dart';
 import 'package:shop_app/screen/edit_product_screen.dart';
 import 'package:shop_app/widgets/app_drawer.dart';
+import 'package:shop_app/widgets/user_product_item.dart';
+import '../screen/user_product_screen.dart';
 
 class UserProductScreen extends StatelessWidget {
   const UserProductScreen({super.key});
@@ -29,7 +31,14 @@ class UserProductScreen extends StatelessWidget {
           child: ListView.builder(
               itemCount: Productdata.items.length,
               itemBuilder: (_, i) => Column(
-                    children: [],
+                    children: [
+                      UserProductItem(
+                        Productdata.items[i].id,
+                        Productdata.items[i].title,
+                        Productdata.items[i].imageUrl,
+                      ),
+                      Divider(),
+                    ],
                   ))),
     );
   }
