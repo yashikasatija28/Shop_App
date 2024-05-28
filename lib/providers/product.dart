@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 class Product with ChangeNotifier {
-  final String id;
+  var id;
   final String title;
   final String description;
   final double price;

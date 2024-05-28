@@ -19,7 +19,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   var _form = GlobalKey<FormState>();
 
   var _editedProducts =
-      Product(id: '', title: '', description: '', price: 0, imageUrl: '');
+      Product(id: null, title: '', description: '', price: 0, imageUrl: '');
 
   var _initValues = {
     'title': '',
@@ -85,10 +85,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
       return;
     }
     _form.currentState?.save();
-    if (_editedProducts.id.isNotEmpty) {
+
+    if (_editedProducts.id != null) {
+      print('iff');
       Provider.of<Products>(context, listen: false)
           .updateProduct(_editedProducts.id, _editedProducts);
     } else {
+      print('elseee');
       Provider.of<Products>(context, listen: false).addProduct(_editedProducts);
     }
     Navigator.of(context).pop();
