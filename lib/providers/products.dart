@@ -66,19 +66,10 @@ class Products with ChangeNotifier {
   //   notifyListeners();
   // }
 
-  addProduct(Product product) {
+  Future<void> addProduct(Product product) {
     final url = Uri.https(
         'flutter-shop-app-c99a5-default-rtdb.firebaseio.com', '/Products.json');
-
-    final newProduct = Product(
-        id: DateTime.now().toString(),
-        title: product.title,
-        description: product.description,
-        price: product.price,
-        imageUrl: product.imageUrl);
-
-    _items.add(newProduct);
-    http
+    return http
         .post(
       url,
       body: json.encode({
@@ -98,6 +89,7 @@ class Products with ChangeNotifier {
           imageUrl: product.imageUrl);
 
       _items.add(newProduct);
+
       notifyListeners();
     });
   }
