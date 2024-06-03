@@ -15,7 +15,7 @@ class UserProductScreen extends StatelessWidget {
     final Productdata = Provider.of<Products>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(' Your Products'),
+        title: Text('Products'),
         actions: [
           IconButton(
             icon: Icon(Icons.add),
