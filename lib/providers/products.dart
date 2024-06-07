@@ -1,3 +1,6 @@
+import 'dart:io';
+import '../models/http.exception.dart';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -71,20 +74,18 @@ class Products with ChangeNotifier {
     try {
       final response = await http.get(url);
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
+      if (extractedData == null) {
+        return;
+      }
       final List<Product> loadedProducts = [];
       extractedData.forEach((prodId, prodData) {
-        id:
-        prodId;
-        title:
-        prodData['title'];
-        decription:
-        prodData['decription'];
-        price:
-        prodData['price'];
-        isFavourite:
-        prodData['isFavourite'];
-        imageUrl:
-        prodData['imageUrl'];
+        loadedProducts.add(Product(
+          id: prodId,
+          title: prodData['title'], // Ensure non-null value
+          description: prodData['description'], // Ensure non-null value
+          price: prodData['price'],
+          imageUrl: prodData['imageUrl'], // Ensure non-null value
+        ));
       });
       _items = loadedProducts;
       notifyListeners();
@@ -123,10 +124,19 @@ class Products with ChangeNotifier {
     }
   }
 
-  updateProduct(String id, Product newProduct) {
-    print(newProduct);
+  Future updateProduct(String id, Product newProduct) async {
     final prodIndex = _items.indexWhere((prod) => prod.id == id);
     if (prodIndex >= 0) {
+      final url = Uri.https(
+          'flutter-shop-app-c99a5-default-rtdb.firebaseio.com',
+          '/Products/$id.json');
+      await http.patch(url,
+          body: json.encode({
+            'title': newProduct.title,
+            'description': newProduct.description,
+            'imageUrl': newProduct.imageUrl,
+            'price': newProduct.price,
+          }));
       _items[prodIndex] = newProduct;
       notifyListeners();
     } else {
@@ -134,8 +144,18 @@ class Products with ChangeNotifier {
     }
   }
 
-  void deleteProduct(String id) {
-    _items.removeWhere((prod) => prod.id == id);
+  Future<void> deleteProduct(String id) async {
+    final url = Uri.https('flutter-shop-app-c99a5-default-rtdb.firebaseio.com',
+        '/Products/$id.json');
+    final existingProductIndex = _items.indexWhere((prod) => prod.id == id);
+    var existingProduct = _items[existingProductIndex];
+    _items.removeAt(existingProductIndex);
     notifyListeners();
+    final Response = await http.delete(url);
+    if (Response.statusCode >= 400) {
+      _items.insert(existingProductIndex, existingProduct);
+      notifyListeners();
+      throw HttpException('Could not delete product');
+    }
   }
 }
