@@ -81,10 +81,10 @@ class Products with ChangeNotifier {
       extractedData.forEach((prodId, prodData) {
         loadedProducts.add(Product(
           id: prodId,
-          title: prodData['title'], // Ensure non-null value
-          description: prodData['description'], // Ensure non-null value
-          price: prodData['price'],
-          imageUrl: prodData['imageUrl'], // Ensure non-null value
+          title: prodData['title'] ?? 'No title',
+          description: prodData['description'] ?? 'N0 Description',
+          price: prodData['price'] ?? 0.0,
+          imageUrl: prodData['imageUrl'] ?? 'NO Image',
         ));
       });
       _items = loadedProducts;
@@ -98,16 +98,18 @@ class Products with ChangeNotifier {
     final url = Uri.https(
         'flutter-shop-app-c99a5-default-rtdb.firebaseio.com', '/Products.json');
     try {
-      final response = await http.post(
-        url,
-        body: json.encode({
-          'title': product.title,
-          'description ': product.description,
-          'imageUrl': product.imageUrl,
-          'price': product.price,
-          'isFavorite': product.isFavorite,
-        }),
-      );
+      final response = await http.post(url,
+          body: json.encode({
+            'title': product.title,
+            'description': product.description,
+            'imageUrl': product.imageUrl,
+            'price': product.price,
+            'isFavorite': product.isFavorite,
+          }));
+      if (response.statusCode >= 400) {
+        throw HttpException('Failed to add product.');
+      }
+
       final newProduct = Product(
           id: json.decode(response.body)['name'],
           title: product.title,
@@ -130,32 +132,44 @@ class Products with ChangeNotifier {
       final url = Uri.https(
           'flutter-shop-app-c99a5-default-rtdb.firebaseio.com',
           '/Products/$id.json');
-      await http.patch(url,
-          body: json.encode({
-            'title': newProduct.title,
-            'description': newProduct.description,
-            'imageUrl': newProduct.imageUrl,
-            'price': newProduct.price,
-          }));
-      _items[prodIndex] = newProduct;
-      notifyListeners();
+      try {
+        final Response = await http.patch(url,
+            body: json.encode({
+              'title': newProduct.title,
+              'description': newProduct.description,
+              'imageUrl': newProduct.imageUrl,
+              'price': newProduct.price,
+            }));
+        print(Response.statusCode);
+        if (Response.statusCode >= 400) {
+          print('Failed to update the product on the server.');
+          throw HttpException('Could not update product.');
+        }
+        _items[prodIndex] = newProduct;
+        notifyListeners();
+      } catch (error) {
+        print('Update failed: $error');
+        throw error;
+      }
     } else {
-      print('...');
+      print('Product not found.');
     }
   }
 
   Future<void> deleteProduct(String id) async {
-    final url = Uri.https('flutter-shop-app-c99a5-default-rtdb.firebaseio.com',
-        '/Products/$id.json');
+    final url = Uri.https(
+        'flutter-shop-app-c99a5-default-rtdb.firebaseio.com', '/Products/$id');
     final existingProductIndex = _items.indexWhere((prod) => prod.id == id);
-    var existingProduct = _items[existingProductIndex];
+    Product? existingProduct = _items[existingProductIndex];
     _items.removeAt(existingProductIndex);
     notifyListeners();
     final Response = await http.delete(url);
-    if (Response.statusCode >= 400) {
+    print(Response.statusCode);
+    if (Response.statusCode >= 150) {
       _items.insert(existingProductIndex, existingProduct);
       notifyListeners();
       throw HttpException('Could not delete product');
     }
+    existingProduct = null;
   }
 }

@@ -116,18 +116,18 @@ class _EditProductScreenState extends State<EditProductScreen> {
             ],
           ),
         );
-        // } finally{
-        //   setState(() {
-        //     _isLoading =false;
-        //   });
-        //   Navigator.of(context).pop();
-        //   }
       }
-      setState(() {
-        _isLoading = false;
-      });
-      Navigator.of(context).pop();
+      // } finally{
+      //   setState(() {
+      //     _isLoading =false;
+      //   });
+      //   Navigator.of(context).pop();
+      //   }
     }
+    setState(() {
+      _isLoading = false;
+    });
+    Navigator.of(context).pop();
   }
 
   @override
