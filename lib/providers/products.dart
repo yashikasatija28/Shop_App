@@ -1,4 +1,3 @@
-import 'dart:io';
 import '../models/http.exception.dart';
 
 import 'package:flutter/material.dart';
@@ -42,6 +41,9 @@ class Products with ChangeNotifier {
     //       'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
     // ),
   ];
+
+  final String authToken;
+  Products(this.authToken, this._items);
   // var _showFavoritesOnly = false;
 
   List<Product> get items {
@@ -69,8 +71,8 @@ class Products with ChangeNotifier {
   //   notifyListeners();
   // }
   Future<void> fetchAndSetProducts() async {
-    final url = Uri.https(
-        'flutter-shop-app-c99a5-default-rtdb.firebaseio.com', '/Products.json');
+    final url = Uri.https('flutter-shop-app-c99a5-default-rtdb.firebaseio.com',
+        '/Products.json?auth=$authToken');
     try {
       final response = await http.get(url);
       final extractedData = json.decode(response.body) as Map<String, dynamic>;

@@ -157,9 +157,11 @@ class _AuthCardState extends State<AuthCard> {
       if (error.toString().contains('INVALID_PASSWORD')) {
         errorMessage = 'Invalid password.';
       }
+      _showErrorDialog(errorMessage);
     } catch (error) {
       const errorMessage =
           'Could not authenticate you . Please try again later.';
+      _showErrorDialog(errorMessage);
     }
     setState(() {
       _isLoading = false;
@@ -204,8 +206,6 @@ class _AuthCardState extends State<AuthCard> {
                     if (value!.isEmpty || !value.contains('@')) {
                       return 'Invalid email!';
                     }
-                    return null;
-                    return null;
                   },
                   onSaved: (value) {
                     _authData['email'] = value!;

@@ -5,17 +5,16 @@ import 'dart:convert';
 import '../models/http.exception.dart  ';
 
 class Auth with ChangeNotifier {
-  late String _token;
-  late DateTime _expiryDate;
-  late String _userId;
-
+  String? _token;
+  DateTime? _expiryDate;
+  String? _userId;
   bool get isAuth {
     return token != null;
   }
 
   String? get token {
     if (_expiryDate != null &&
-        _expiryDate.isAfter(DateTime.now()) &&
+        _expiryDate!.isAfter(DateTime.now()) &&
         _token != null) {
       return _token;
     }
@@ -42,6 +41,11 @@ class Auth with ChangeNotifier {
         throw HttpException(responseData['error']['message']);
       }
       _token = responseData['idToken'];
+      _userId = responseData['localId'];
+      _expiryDate = DateTime.now().add(Duration(
+          seconds: int.parse(
+        responseData['expiresIn'],
+      )));
     } catch (error) {
       throw error;
     }
