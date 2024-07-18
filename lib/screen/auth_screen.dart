@@ -96,7 +96,7 @@ class AuthCard extends StatefulWidget {
 class _AuthCardState extends State<AuthCard> {
   final GlobalKey<FormState> _formKey = GlobalKey();
   AuthMode _authMode = AuthMode.Login;
-  Map<String, String> _authData = {
+  Map<String, String> authData = {
     'email': '',
     'password': '',
   };
@@ -132,37 +132,39 @@ class _AuthCardState extends State<AuthCard> {
       if (_authMode == AuthMode.Login) {
         // Log user in
         await Provider.of<Auth>(context, listen: false).login(
-          _authData['email']!,
-          _authData['password']!,
+          authData['email']!,
+          authData['password']!,
         );
       } else {
         // Sign user up
-        await Provider.of<Auth>(context, listen: false)
-            .signup(_authData['email']!, _authData['password']!);
+        print('computing');
+        await Provider.of<Auth>(context, listen: false).signup(
+          authData['email']!,
+          authData['password']!,
+        );
+        print('fetching');
       }
     } on HttpException catch (error) {
       var errorMessage = 'Authentication failed';
       if (error.toString().contains('Email Exists')) {
         errorMessage = 'This email address is already in use.';
-      }
-      if (error.toString().contains('INVALID_Email')) {
+      } else if (error.toString().contains('INVALID_Email')) {
         errorMessage = 'This is not a valid email address.';
-      }
-      if (error.toString().contains('WEAK_Password')) {
+      } else if (error.toString().contains('WEAK_Password')) {
         errorMessage = 'This Password is too weak.';
-      }
-      if (error.toString().contains('EMAIL-NOT_FOUND')) {
+      } else if (error.toString().contains('EMAIL-NOT_FOUND')) {
         errorMessage = 'Could not find a user with email';
-      }
-      if (error.toString().contains('INVALID_PASSWORD')) {
+      } else if (error.toString().contains('INVALID_PASSWORD')) {
         errorMessage = 'Invalid password.';
+      } else {
+        _showErrorDialog(errorMessage);
       }
-      _showErrorDialog(errorMessage);
     } catch (error) {
       const errorMessage =
           'Could not authenticate you . Please try again later.';
       _showErrorDialog(errorMessage);
     }
+    if (!mounted) return;
     setState(() {
       _isLoading = false;
     });
@@ -206,9 +208,10 @@ class _AuthCardState extends State<AuthCard> {
                     if (value!.isEmpty || !value.contains('@')) {
                       return 'Invalid email!';
                     }
+                    return null;
                   },
                   onSaved: (value) {
-                    _authData['email'] = value!;
+                    authData['email'] = value!;
                   },
                 ),
                 TextFormField(
@@ -219,24 +222,24 @@ class _AuthCardState extends State<AuthCard> {
                     if (value!.isEmpty || value.length < 5) {
                       return 'Password is too short!';
                     }
+                    return null;
                   },
                   onSaved: (value) {
-                    _authData['password'] = value!;
+                    authData['password'] = value!;
                   },
                 ),
                 if (_authMode == AuthMode.Signup)
                   TextFormField(
-                    enabled: _authMode == AuthMode.Signup,
-                    decoration: InputDecoration(labelText: 'Confirm Password'),
-                    obscureText: true,
-                    validator: _authMode == AuthMode.Signup
-                        ? (value) {
-                            if (value != _passwordController.text) {
-                              return 'Passwords do not match!';
-                            }
-                          }
-                        : null,
-                  ),
+                      enabled: _authMode == AuthMode.Signup,
+                      decoration:
+                          InputDecoration(labelText: 'Confirm Password'),
+                      obscureText: true,
+                      validator: (value) {
+                        if (value != _passwordController.text) {
+                          return 'Passwords do not match!';
+                        }
+                        return null;
+                      }),
                 SizedBox(
                   height: 20,
                 ),

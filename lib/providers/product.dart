@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import '../providers/auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
@@ -20,16 +20,21 @@ class Product with ChangeNotifier {
     this.isFavorite = false,
   });
 
+  get userId => null;
+
+  get token => null;
+
   void _setFavValue(bool newValue) {
     isFavorite = newValue;
     notifyListeners();
   }
 
-  Future<void> toggleFavoriteStatus() async {
+  Future<void> toggleFavoriteStatus(token, userId) async {
     final oldstatus = isFavorite;
     isFavorite = !isFavorite;
-    final url = Uri.https('flutter-shop-app-c99a5-default-rtdb.firebaseio.com',
-        '/Products/$id.json');
+    final url = Uri.https(
+        'flutter-shop-app-c99a5-default-rtdb.firebaseio.com/$userId/',
+        '/Products/$id.json?auth=$token');
     try {
       final response = await http.patch(url,
           body: json.encode({

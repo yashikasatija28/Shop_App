@@ -42,8 +42,9 @@ class Products with ChangeNotifier {
     // ),
   ];
 
-  final String authToken;
-  Products(this.authToken, this._items);
+  final String? authToken;
+  final String? userId;
+  Products(this.authToken, this.userId, this._items);
   // var _showFavoritesOnly = false;
 
   List<Product> get items {
@@ -97,8 +98,8 @@ class Products with ChangeNotifier {
   }
 
   Future<void> addProduct(Product product) async {
-    final url = Uri.https(
-        'flutter-shop-app-c99a5-default-rtdb.firebaseio.com', '/Products.json');
+    final url = Uri.https('flutter-shop-app-c99a5-default-rtdb.firebaseio.com',
+        '/Products.json?auth=$authToken');
     try {
       final response = await http.post(url,
           body: json.encode({
@@ -106,7 +107,7 @@ class Products with ChangeNotifier {
             'description': product.description,
             'imageUrl': product.imageUrl,
             'price': product.price,
-            'isFavorite': product.isFavorite,
+            'creatorId': userId,
           }));
       if (response.statusCode >= 400) {
         throw HttpException('Failed to add product.');
@@ -133,7 +134,7 @@ class Products with ChangeNotifier {
     if (prodIndex >= 0) {
       final url = Uri.https(
           'flutter-shop-app-c99a5-default-rtdb.firebaseio.com',
-          '/Products/$id.json');
+          '/Products/$id.json?auth=$authToken');
       try {
         final Response = await http.patch(url,
             body: json.encode({
@@ -159,8 +160,8 @@ class Products with ChangeNotifier {
   }
 
   Future<void> deleteProduct(String id) async {
-    final url = Uri.https(
-        'flutter-shop-app-c99a5-default-rtdb.firebaseio.com', '/Products/$id');
+    final url = Uri.https('flutter-shop-app-c99a5-default-rtdb.firebaseio.com',
+        '/Products/$id.json?auth=$authToken');
     final existingProductIndex = _items.indexWhere((prod) => prod.id == id);
     Product? existingProduct = _items[existingProductIndex];
     _items.removeAt(existingProductIndex);
