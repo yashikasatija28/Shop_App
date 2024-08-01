@@ -73,7 +73,7 @@ class Products with ChangeNotifier {
   // }
   Future<void> fetchAndSetProducts() async {
     final url = Uri.https('flutter-shop-app-c99a5-default-rtdb.firebaseio.com',
-        '/Products.json?auth=$authToken');
+        '/Products.json', {'auth': authToken});
     try {
       final response = await http.get(url);
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
@@ -99,8 +99,9 @@ class Products with ChangeNotifier {
 
   Future<void> addProduct(Product product) async {
     final url = Uri.https('flutter-shop-app-c99a5-default-rtdb.firebaseio.com',
-        '/Products.json?auth=$authToken');
+        '/Products.json', {'auth': authToken});
     try {
+      print('trying in');
       final response = await http.post(url,
           body: json.encode({
             'title': product.title,
@@ -112,6 +113,8 @@ class Products with ChangeNotifier {
       if (response.statusCode >= 400) {
         throw HttpException('Failed to add product.');
       }
+      print('Response status code: ${response.statusCode}');
+      print('Response body: ${response.body}');
 
       final newProduct = Product(
           id: json.decode(response.body)['name'],

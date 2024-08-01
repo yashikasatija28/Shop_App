@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -12,36 +11,37 @@ class Auth with ChangeNotifier {
   String? _userId;
   Timer? _authtime;
   bool get isAuth {
-    return token != null;
+    final isAuthenticated = token != null;
+    print('isAuth check: $isAuthenticated');
+    return isAuthenticated;
   }
 
-  get token {
+  String? get token {
     if (_expiryDate != null &&
         _expiryDate!.isAfter(DateTime.now()) &&
         _token != null) {
+      print('token is valid');
       return _token;
     }
     return null;
   }
 
-  get userId {
+  String? get userId {
     return _userId;
   }
 
   Future<void> _authenticate(
       String email, String password, String urlSegment) async {
-    final url =
-        'https://identitytoolkit.googleapis.com/v1/accounts:$urlSegment?key=AIzaSyAZnaXQ8nu9QnHI2WkAbmW8WjyXmI-BYiI';
+    final url = Uri.parse(
+        'https://identitytoolkit.googleapis.com/v1/accounts:$urlSegment?key=AIzaSyAZnaXQ8nu9QnHI2WkAbmW8WjyXmI-BYiI');
     try {
       final response = await http.post(
-        url as Uri,
-        body: json.encode(
-          {
-            'email': email,
-            'password': password,
-            'returnSecureToken': true,
-          },
-        ),
+        url,
+        body: json.encode({
+          'email': email,
+          'password': password,
+          'returnSecureToken': true,
+        }),
       );
       final responseData = json.decode(response.body);
       if (responseData['error'] != null) {
@@ -49,10 +49,13 @@ class Auth with ChangeNotifier {
       }
       _token = responseData['idToken'];
       _userId = responseData['localId'];
-      _expiryDate = DateTime.now().add(Duration(
-          seconds: int.parse(
-        responseData['expiresIn'],
-      )));
+      _expiryDate = DateTime.now().add(
+        Duration(
+          seconds: int.parse(responseData['expiresIn']),
+        ),
+      );
+      _autoLogout();
+      notifyListeners();
     } catch (error) {
       throw error;
     }
@@ -67,6 +70,7 @@ class Auth with ChangeNotifier {
   }
 
   void logOut() {
+    print('logging out');
     _token = null;
     _expiryDate = null;
     _userId = null;
@@ -74,14 +78,23 @@ class Auth with ChangeNotifier {
       _authtime?.cancel();
       _authtime = null;
     }
+    print(
+        'Logged out successfully. Token: $_token, User ID: $_userId, Expiry Date: $_expiryDate');
     notifyListeners();
+    print(
+        'Logged out successfully. Token: $_token, User ID: $_userId, Expiry Date: $_expiryDate');
   }
 
   void _autoLogout() {
     if (_authtime != null) {
       _authtime?.cancel();
     }
+    if (_expiryDate == null) {
+      print('Auto logout aborted: Expiry date is null');
+      return;
+    }
     final timeToExpiry = _expiryDate!.difference(DateTime.now()).inSeconds;
     _authtime = Timer(Duration(seconds: timeToExpiry), logOut);
+    print('Auto logout scheduled in $timeToExpiry seconds');
   }
 }

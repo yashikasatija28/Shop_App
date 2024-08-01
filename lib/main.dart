@@ -19,25 +19,25 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
         providers: [
-          ChangeNotifierProvider.value(
-            value: Auth(),
+          ChangeNotifierProvider(
+            create: (ctx) => Auth(),
           ),
           ChangeNotifierProxyProvider<Auth, Products>(
             update: (ctx, auth, previousProducts) => Products(
-              auth.token!,
-              auth.userId!,
-              previousProducts == null ? [] : previousProducts.items,
+              auth.token ?? '',
+              auth.userId ?? '',
+              previousProducts?.items ?? [],
             ),
-            create: (_) => Products(null, null, []),
+            create: (_) => Products('', '', []),
           ),
           ChangeNotifierProvider.value(
             value: Cart(),
           ),
           ChangeNotifierProxyProvider<Auth, Orders>(
             update: (ctx, auth, previousOrders) => Orders(
-              auth.token!,
-              auth.userId!,
-              previousOrders == null ? [] : previousOrders.orders,
+              auth.token ?? '',
+              auth.userId ?? '',
+              previousOrders?.orders ?? [],
             ),
             create: (ctx) => Orders(null, null, []),
           ),
@@ -58,6 +58,7 @@ class MyApp extends StatelessWidget {
                       OrdersScreen.routeName: (ctx) => OrdersScreen(),
                       UserProductScreen.routename: (ctx) => UserProductScreen(),
                       EditProductScreen.routename: (ctx) => EditProductScreen(),
+                      AuthScreen.routeName: (ctx) => AuthScreen(),
                     })));
   }
 }

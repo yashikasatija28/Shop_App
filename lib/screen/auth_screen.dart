@@ -120,31 +120,39 @@ class _AuthCardState extends State<AuthCard> {
   }
 
   Future<void> _submit() async {
+    print('Attempting to sign up with email: ${authData['email']}');
+    if (!_formKey.currentState!.validate()) {
+      print('Validation failed');
+      // Invalid!
+      return;
+    }
+    print('Form is valid');
+    _formKey.currentState!.save();
+    setState(() {
+      _isLoading = true;
+    });
     try {
-      if (!_formKey.currentState!.validate()) {
-        // Invalid!
-        return;
-      }
-      _formKey.currentState!.save();
-      setState(() {
-        _isLoading = true;
-      });
       if (_authMode == AuthMode.Login) {
         // Log user in
+        print('Attempting to log in with email: ${authData['email']}');
+        print('Logging in');
         await Provider.of<Auth>(context, listen: false).login(
           authData['email']!,
           authData['password']!,
         );
+        print('Loginsuceessful');
       } else {
         // Sign user up
-        print('computing');
+        print('Attempting to sign up with email: ${authData['email']}');
+        print('signing up');
         await Provider.of<Auth>(context, listen: false).signup(
           authData['email']!,
           authData['password']!,
         );
-        print('fetching');
+        print('signup successful');
       }
     } on HttpException catch (error) {
+      print('HttpException: ${error.toString()}');
       var errorMessage = 'Authentication failed';
       if (error.toString().contains('Email Exists')) {
         errorMessage = 'This email address is already in use.';
@@ -160,14 +168,15 @@ class _AuthCardState extends State<AuthCard> {
         _showErrorDialog(errorMessage);
       }
     } catch (error) {
+      print('General error: ${error.toString()}');
       const errorMessage =
           'Could not authenticate you . Please try again later.';
       _showErrorDialog(errorMessage);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
-    if (!mounted) return;
-    setState(() {
-      _isLoading = false;
-    });
   }
 
   void _switchAuthMode() {
